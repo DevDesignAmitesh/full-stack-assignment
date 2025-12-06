@@ -6,6 +6,7 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import type { Message } from "@repo/types/types";
 import { AI_PROMPT } from "../prompt";
+import { PORT } from "../bin";
 
 if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET not found");
@@ -151,3 +152,5 @@ export const createCompletion = async (
     cb(content);
   }
 };
+
+export const HTTP_URL = `https://locolhost:${PORT}`;

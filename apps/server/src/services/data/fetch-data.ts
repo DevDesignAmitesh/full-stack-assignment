@@ -10,8 +10,12 @@ export const fetchDynamicDataRequest = async (
   try {
     const userId = req.userId;
 
+    console.log("these are the queries from the client");
+    console.log(req.query);
+
     const { success, error, data } = dynamicDataSchema.safeParse({
-      type: req.params.type,
+      type: req.query.type,
+      orderId: req.query.orderId,
     });
 
     if (!success) {
@@ -33,14 +37,14 @@ export const fetchDynamicDataRequest = async (
       if (deals.length === 0) {
         return responsePlate({
           res,
-          message: "no deals found",
-          status: 400,
+          message: "no data found",
+          status: 404,
         });
       }
 
       return responsePlate({
         res,
-        message: "deals found",
+        message: "data found",
         status: 200,
         data: {
           deals,
@@ -54,14 +58,14 @@ export const fetchDynamicDataRequest = async (
       if (orders.length === 0) {
         return responsePlate({
           res,
-          message: "no orders found",
-          status: 400,
+          message: "no data found",
+          status: 404,
         });
       }
 
       return responsePlate({
         res,
-        message: "orders found",
+        message: "data found",
         status: 200,
         data: {
           orders,
@@ -83,14 +87,14 @@ export const fetchDynamicDataRequest = async (
       if (payments.length === 0) {
         return responsePlate({
           res,
-          message: "no payments found",
-          status: 400,
+          message: "no data found",
+          status: 404,
         });
       }
 
       return responsePlate({
         res,
-        message: "payments found",
+        message: "data found",
         status: 200,
         data: {
           payments,

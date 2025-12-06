@@ -9,6 +9,7 @@ export const createUserRequest = async (
 ): Promise<any> => {
   try {
     const { data, success, error } = createUserSchema.safeParse(req.body);
+    
     if (!success) {
       return responsePlate({
         res,
