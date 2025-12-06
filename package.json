@@ -20,8 +20,5 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "dependencies": {
-    "dotenv-cli": "^11.0.0"
-  }
+  ]
 }

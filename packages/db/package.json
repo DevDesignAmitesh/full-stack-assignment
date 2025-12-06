@@ -1,8 +1,11 @@
 {
-  "name": "db",
+  "name": "@repo/db",
   "module": "index.ts",
   "type": "commonjs",
   "private": true,
+  "exports": {
+    "./db": "./src/index.ts"
+  },
   "scripts": {
     "push": "npx drizzle-kit push --config='./src/drizzle.config.ts'",
     "generate": "npx drizzle-kit generate --config='./src/drizzle.config.ts'",
