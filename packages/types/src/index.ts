@@ -10,3 +10,21 @@ export const zodErrorMessage = ({ error }: { error: ZodError }) => {
     .map((er) => `${er.path.join(".")}: ${er.message}`)
     .join(" ");
 };
+
+export const chatSchema = z.object({
+  allMessages: z.array(
+    z.object({ role: z.enum(["user", "assistant"]), message: z.string() })
+  ),
+  recentMessage: z.string(),
+});
+
+export type chatRole = "user" | "assistant";
+
+export interface Message {
+  role: chatRole;
+  message: string;
+}
+
+export const dynamicDataSchema = z.object({
+  type: z.enum(["orders", "payments", "deals"]),
+});

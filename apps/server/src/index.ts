@@ -1,10 +1,9 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { authRouter } from "./routes/auth.js";
-import { paymentsRouter } from "./routes/payments.js";
-import { orderRouter } from "./routes/order.js";
-import { dealsRouter } from "./routes/deals.js";
+import { authRouter } from "./routes/auth";
+import { getDataRouter } from "./routes/data";
+import { chatRouter } from "./routes/chat";
 
 export const app = express();
 
@@ -23,6 +22,5 @@ app.use(
 );
 
 app.use("api/v1/auth", authRouter);
-app.use("api/v1/order", orderRouter);
-app.use("api/v1/payments", paymentsRouter);
-app.use("api/v1/deals", dealsRouter);
+app.use("api/v1/chat", chatRouter);
+app.use("api/v1/data", getDataRouter);
