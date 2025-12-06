@@ -43,3 +43,20 @@ export const verifyToken = ({ token }: { token: string }): string | null => {
     return null;
   }
 };
+
+export const setToken = ({
+  res,
+  token,
+  MINUTES = 60,
+}: {
+  res: Response;
+  token: string;
+  MINUTES?: number;
+}) => {
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: MINUTES * 60 * 1000, // 60 minutes
+  });
+};

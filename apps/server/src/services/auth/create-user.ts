@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { generateToken, responsePlate } from "../../utils";
+import { generateToken, responsePlate, setToken } from "../../utils";
 import { createUserSchema, zodErrorMessage } from "@repo/types/types";
 import { db, eq, schema } from "@repo/db/db";
 
@@ -61,11 +61,12 @@ export const createUserRequest = async (
           });
         }
 
+        setToken({ res, token });
+
         return responsePlate({
           res,
           message: "user created successfully",
           status: 201,
-          data: { token },
         });
       })
       .catch((e) => {
