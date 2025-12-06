@@ -4,10 +4,19 @@
   "type": "module",
   "private": true,
   "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@repo/envs": "workspace:*",
     "@types/bun": "latest",
-    "@repo/typescript-config": "workspace:*"
+    "@types/pg": "^8.15.6",
+    "drizzle-kit": "^0.31.8",
+    "tsx": "^4.21.0"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.0",
+    "pg": "^8.16.3"
   }
 }
