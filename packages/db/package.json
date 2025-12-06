@@ -1,11 +1,15 @@
 {
   "name": "db",
   "module": "index.ts",
-  "type": "module",
+  "type": "commonjs",
   "private": true,
+  "scripts": {
+    "push": "npx drizzle-kit push --config='./src/drizzle.config.ts'",
+    "generate": "npx drizzle-kit generate --config='./src/drizzle.config.ts'",
+    "migrate": "npx drizzle-kit migrate --config='./src/drizzle.config.ts'"
+  },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "@repo/envs": "workspace:*",
     "@types/bun": "latest",
     "@types/pg": "^8.15.6",
     "drizzle-kit": "^0.31.8",
