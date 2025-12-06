@@ -27,4 +27,5 @@ export interface Message {
 
 export const dynamicDataSchema = z.object({
   type: z.enum(["orders", "payments", "deals"]),
+  orderId: z.uuid().optional(),
 });

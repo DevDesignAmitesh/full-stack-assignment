@@ -8,6 +8,8 @@ export const fetchDynamicDataRequest = async (
   res: Response
 ): Promise<any> => {
   try {
+    const userId = req.userId;
+
     const { success, error, data } = dynamicDataSchema.safeParse({
       type: req.params.type,
     });
@@ -21,7 +23,7 @@ export const fetchDynamicDataRequest = async (
       });
     }
 
-    const { type } = data;
+    const { type, orderId } = data;
 
     if (type === "deals") {
       const deals = await db.query.deals.findMany({
@@ -45,7 +47,9 @@ export const fetchDynamicDataRequest = async (
         },
       });
     } else if (type === "orders") {
-      const orders = await db.query.orders.findMany();
+      const orders = await db.query.orders.findMany({
+        where: eq(schema.orders.userId, userId),
+      });
 
       if (orders.length === 0) {
         return responsePlate({
@@ -64,7 +68,17 @@ export const fetchDynamicDataRequest = async (
         },
       });
     } else if (type === "payments") {
-      const payments = await db.query.payments.findMany();
+      if (!orderId) {
+        return responsePlate({
+          res,
+          message: "order Id is required",
+          status: 411,
+        });
+      }
+
+      const payments = await db.query.payments.findMany({
+        where: eq(schema.payments.orderId, orderId),
+      });
 
       if (payments.length === 0) {
         return responsePlate({
@@ -83,6 +97,7 @@ export const fetchDynamicDataRequest = async (
         },
       });
     }
+
     return responsePlate({
       res,
       message: "invalid paramters",
