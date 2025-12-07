@@ -2,6 +2,9 @@ import { paramsType } from "@repo/types/types";
 
 export const HTTP_URL = "http://localhost:4000/api/v1";
 
+// for docker
+// export const HTTP_URL = "http://server:4000/api/v1";
+
 export function parseBotResponse(rawString: string): {
   relatedTo: paramsType;
   message: string | any[];

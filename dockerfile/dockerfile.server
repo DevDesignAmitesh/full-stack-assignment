@@ -1,0 +1,15 @@
+FROM node:20-alpine
+
+RUN npm i -g bun
+
+WORKDIR /assignment
+
+COPY package.json bun.lock ./
+
+COPY . .
+
+RUN bun i
+
+EXPOSE 4000
+
+CMD ["./docker-entry.sh"]

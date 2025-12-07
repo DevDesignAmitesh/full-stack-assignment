@@ -11,6 +11,9 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: ["http://localhost:3000"],
+
+    // for docker
+    // origin: ["http://client:3000"],
     credentials: true,
     optionsSuccessStatus: 200,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

@@ -1,7 +1,7 @@
 "use client";
 
 import useSendMessage from "@/hooks/useSendMessages";
-import { FrontendMessage, paramsType } from "@repo/types/types";
+import { FrontendMessage } from "@repo/types/types";
 import { useEffect, useState } from "react";
 import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
 import { parseBotResponse } from "@/utils";
@@ -12,25 +12,26 @@ const MESSAGE_KEY = "all_message_key";
 export default function ChatPage() {
   const { loading, sendMessage } = useSendMessage();
 
-  const [messages, setMessages] = useState<FrontendMessage[]>(
-    JSON.parse(localStorage.getItem(MESSAGE_KEY) ?? "[]")
-  );
+  const [messages, setMessages] = useState<FrontendMessage[]>([]);
   const [text, setText] = useState<string>("");
 
   const getMessages = () => {
     try {
-      const stringifyMessages = localStorage.getItem(MESSAGE_KEY);
-      const parsedMessage = JSON.parse(stringifyMessages ?? "[]");
-
-      setMessages(parsedMessage);
-    } catch (error) {
-      console.log("error in getMessage ", error);
-    } finally {
+      const stored = localStorage.getItem(MESSAGE_KEY);
+      if (stored) {
+        setMessages(JSON.parse(stored));
+      }
+    } catch (err) {
+      console.error("Error reading messages", err);
     }
   };
 
   const savingMessages = () => {
-    localStorage.setItem(MESSAGE_KEY, JSON.stringify(messages));
+    try {
+      localStorage.setItem(MESSAGE_KEY, JSON.stringify(messages));
+    } catch (err) {
+      console.error("Error saving messages", err);
+    }
   };
 
   useEffect(() => {
