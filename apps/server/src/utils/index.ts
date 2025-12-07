@@ -1,15 +1,19 @@
-import { Response } from "express";
-import { sign, verify } from "jsonwebtoken";
 import "dotenv/config";
+import { Response } from "express";
 // import { ChatOpenAI } from "@langchain/openai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import type { Message } from "@repo/types/types";
+import type { Message, paramsType } from "@repo/types/types";
 import { AI_PROMPT } from "../prompt";
-import { PORT } from "../bin";
+import { fetchDynamicDataTool } from "../tool/fetchDynamicDataTool";
+import { identifyAndCreateUserTool } from "../tool/identifyAndCreateUserTool";
 
 if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET not found");
+}
+
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error("process.env.GEMINI_API_KEY not found");
 }
 
 export const responsePlate = ({
@@ -26,82 +30,50 @@ export const responsePlate = ({
   return res.status(status).json({ message, data });
 };
 
-export const generateToken = ({
-  userId,
-}: {
-  userId: string;
-}): string | null => {
-  try {
-    const token = sign({ userId }, process.env.JWT_SECRET!);
-    return token;
-  } catch (e) {
-    console.log("error in generateToken ", e);
-    return null;
-  }
-};
-
-export const verifyToken = ({ token }: { token: string }): string | null => {
-  try {
-    const res = verify(token, process.env.JWT_SECRET!) as { userId: string };
-    if (res.userId) return res.userId;
-    return null;
-  } catch (e) {
-    console.log("error in generateToken ", e);
-    return null;
-  }
-};
-
-export const setToken = ({
-  res,
-  token,
-  MINUTES = 60,
-}: {
-  res: Response;
-  token: string;
-  MINUTES?: number;
-}) => {
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: MINUTES * 60 * 1000, // 60 minutes
-  });
-};
-
 export function parseBotResponse(rawString: string): {
-  relatedTo: string;
+  relatedTo: paramsType;
   message: string;
 } | null {
-  if (!rawString || typeof rawString !== "string") {
-    return null;
-  }
+  if (!rawString || typeof rawString !== "string") return null;
 
   try {
-    // In case the stream contains extra characters before/after JSON
-    const jsonStart = rawString.indexOf("{");
-    const jsonEnd = rawString.lastIndexOf("}");
+    let cleaned = rawString.trim();
 
-    if (jsonStart === -1 || jsonEnd === -1) {
-      return null;
+    // Remove markdown fences
+    cleaned = cleaned
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
+    /**
+     * ✅ CRITICAL FIX:
+     * If the string contains escaped newlines or quotes,
+     * it means JSON was stringified once already.
+     * So we must parse it ONCE to get real JSON text.
+     */
+    if (cleaned.includes('\\"') || cleaned.includes("\\n")) {
+      cleaned = JSON.parse(`"${cleaned.replace(/"/g, '\\"')}"`);
     }
 
-    const sliced = rawString.slice(jsonStart, jsonEnd + 1);
+    const jsonStart = cleaned.indexOf("{");
+    const jsonEnd = cleaned.lastIndexOf("}");
+
+    if (jsonStart === -1 || jsonEnd === -1) return null;
+
+    const sliced = cleaned.slice(jsonStart, jsonEnd + 1);
+
     const parsed = JSON.parse(sliced);
 
-    // Validate structure
     if (
-      typeof parsed.relatedTo === "string" &&
+      (typeof parsed.relatedTo === "string" || parsed.relatedTo === null) &&
       typeof parsed.message === "string"
     ) {
-      return {
-        relatedTo: parsed.relatedTo,
-        message: parsed.message,
-      };
+      return parsed;
     }
 
-    // If keys missing → ignore / fallback
     return null;
-  } catch {
+  } catch (err) {
+    console.error("parseBotResponse error:", err);
     return null;
   }
 }
@@ -119,12 +91,12 @@ export const createCompletion = async (
   const model = new ChatGoogleGenerativeAI({
     model: "gemini-2.5-flash",
     temperature: 1,
-    apiKey: process.env.GEMINI_API_KEY || "",
+    apiKey: process.env.GEMINI_API_KEY!,
   });
 
   const agent = createReactAgent({
     llm: model,
-    tools: [],
+    tools: [fetchDynamicDataTool, identifyAndCreateUserTool],
   });
 
   const langchainMessages = [
@@ -137,20 +109,24 @@ export const createCompletion = async (
 
   const result = await agent.invoke({ messages: langchainMessages });
 
-  // 🔍 Extract the last AI message
-  const aiMessage = result.messages?.findLast(
-    (m: any) => m._getType?.() === "ai"
-  );
+  console.log("result from ai", result.messages[2]?.content);
 
-  if (aiMessage?.content) {
-    const content =
-      typeof aiMessage.content === "string"
-        ? aiMessage.content
-        : JSON.stringify(aiMessage.content);
+  // // 🔍 Extract the last AI message
 
-    // Stream the AI's message back
-    cb(content);
-  }
+  // const aiMessage = [result.messages[2]]
+  //   .reverse()
+  //   .find((m) => m instanceof AIMessage);
+
+  // if (aiMessage?.content) {
+  //   const content =
+  //     typeof aiMessage.content === "string"
+  //       ? aiMessage.content
+  //       : JSON.stringify(aiMessage.content);
+
+  // }
+  console.log(typeof result.messages[2]?.content);
+  cb(result.messages[2]?.content as string);
 };
 
-export const HTTP_URL = `https://locolhost:${PORT}`;
+export const PORT = 4000;
+export const HTTP_URL = `https://locolhost:${PORT}/api/v1`;

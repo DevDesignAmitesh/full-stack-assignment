@@ -1,51 +1,74 @@
 import { tool } from "@langchain/core/tools";
 import { dynamicDataSchema } from "@repo/types/types";
-import axios from "axios";
-import { HTTP_URL } from "../utils";
+import { db, eq, schema } from "@repo/db/db";
 
 export const fetchDynamicDataTool = tool(
   async (input: unknown) => {
     try {
+      console.log("fetch order tool called", input);
       const { data, success, error } = dynamicDataSchema.safeParse(input);
 
       if (!success) {
         return {
           type: "invalid_inputs",
-          message: error,
         };
       }
 
       const { type, orderId } = data;
 
-      const res = await axios.get(
-        `${HTTP_URL}/data/fetch-data?type=${type}&orderId=${orderId}`,
-        { validateStatus: () => true }
-      );
+      if (type === "deals") {
+        const deals = await db.query.deals.findMany({
+          where: eq(schema.deals.isAcive, true),
+        });
 
-      if (res.status === 200) {
+        if (deals.length === 0) {
+          return {
+            message: "data_not_found",
+          }
+        }
+
         return {
           type: "data_found",
-          message: res?.data?.message,
-          data: res?.data?.data,
-        };
-      } else if (res.status === 411) {
+          data: deals,
+        }
+
+      } else if (type === "orders") {
+        const orders = await db.query.orders.findMany();
+
+        if (orders.length === 0) {
+          return {
+            message: "data_not_found",
+          }
+        }
+
         return {
-          type: "invalid_inputs",
-          message: error,
+          type: "data_found",
+          data: orders
         };
-      } else if (res.status === 500) {
+      } else if (type === "payments") {
+        if (!orderId) {
+          return {
+            type: "orderId_not_found"
+          }
+        }
+
+        const payments = await db.query.payments.findMany({
+          where: eq(schema.payments.orderId, orderId),
+        });
+
+        if (payments.length === 0) {
+          return {
+            message: "data_not_found",
+          }
+        }
+
         return {
-          type: "internal_server_error",
-          message: res?.data?.message,
-        };
-      } else if (res.status === 400) {
-        return {
-          type: "invalid_params",
-          message: res?.data?.message,
+          type: "data_found",
+          data: payments
         };
       }
     } catch (e) {
-      console.log("error in identifyAndCreateUserTool ", e);
+      console.log("error in fetchDynamicDataTool ", e);
     }
   },
   {

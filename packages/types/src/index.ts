@@ -25,6 +25,15 @@ export interface Message {
   message: string;
 }
 
+export interface FrontendMessage {
+  id: string;
+  text: string;
+  sender: chatRole;
+  timestamp: Date;
+}
+
+export type paramsType = "orders" | "payments" | "deals" | null;
+
 export const dynamicDataSchema = z.object({
   type: z.enum(["orders", "payments", "deals"]),
   orderId: z.uuid().optional(),

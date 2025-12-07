@@ -1,16 +1,13 @@
 import type { Request, Response } from "express";
-import { chatSchema } from "@repo/types/types";
-import { db, eq, schema } from "@repo/db/db";
+import { chatSchema, paramsType } from "@repo/types/types";
 import { createCompletion } from "../../utils";
 import { parseBotResponse, responsePlate } from "../../utils";
-import { AI_PROMPT } from "../../prompt";
 
 export const talkRequest = async (
   req: Request,
   res: Response
 ): Promise<any> => {
   try {
-    const userId = req.userId;
     const { success, data, error } = chatSchema.safeParse(req.body);
 
     if (!success) {
@@ -25,33 +22,24 @@ export const talkRequest = async (
       });
     }
 
+    console.log("data validated");
+
     const { recentMessage, allMessages } = data;
-
-    const user = await db.query.users.findFirst({
-      where: eq(schema.users.id, userId),
-    });
-
-    if (!user) {
-      return responsePlate({
-        res,
-        message: "user not found",
-        status: 404,
-      });
-    }
 
     // message which will be set in the inmemory and db for the assistant role
     let parsed: {
-      relatedTo: string;
+      relatedTo: paramsType;
       message: string;
     } | null = {
       message: "",
-      relatedTo: "",
+      relatedTo: null,
     };
 
     try {
       await createCompletion(
         [...allMessages, { message: recentMessage, role: "user" }],
         (chunk) => {
+          console.log("data from ai", chunk);
           parsed = parseBotResponse(chunk);
         }
       );
@@ -72,6 +60,7 @@ export const talkRequest = async (
       });
     }
 
+    console.log("sending the message", parsed);
     return responsePlate({
       res,
       status: 201,

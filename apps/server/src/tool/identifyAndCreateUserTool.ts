@@ -1,52 +1,57 @@
 import { tool } from "@langchain/core/tools";
 import { createUserSchema } from "@repo/types/types";
-import axios from "axios";
-import { HTTP_URL } from "../utils";
+import { db, eq, schema } from "@repo/db/db";
 
 export const identifyAndCreateUserTool = tool(
   async (input: unknown) => {
     try {
+      console.log("user tool called", input);
       const { data, success, error } = createUserSchema.safeParse(input);
 
       if (!success) {
         return {
           type: "invalid_inputs",
-          message: error,
+          error,
         };
       }
 
       const { name, number } = data;
 
-      const res = await axios.post(
-        `${HTTP_URL}/auth/identify-create-user`,
-        {
-          name,
-          number,
-        },
-        { validateStatus: () => true }
-      );
+      const existingUser = await db.query.users.findFirst({
+        where: eq(schema.users.number, Number(number)),
+      });
 
-      if (res.status === 201) {
-        return {
-          type: "user_created",
-          message: res?.data?.message,
-        };
-      } else if (res.status === 411) {
-        return {
-          type: "invalid_inputs",
-          message: error,
-        };
-      } else if (res.status === 500) {
-        return {
-          type: "internal_server_error",
-          message: res?.data?.message,
-        };
-      } else if (res.status === 400) {
+      if (existingUser) {
         return {
           type: "user_already_exists",
-          message: res?.data?.message,
         };
       }
+
+      await db
+        .insert(schema.users)
+        .values({
+          name,
+          number: Number(number),
+        })
+        .returning({
+          id: schema.users.id,
+        })
+        .then(([data]) => {
+          if (!data?.id) {
+            return {
+              type: "internal_server_error",
+            };
+          }
+          return {
+            type: "user_created",
+          };
+        })
+        .catch((e) => {
+          console.log("this is the db error", e);
+          return {
+            type: "internal_server_error",
+          };
+        });
     } catch (e) {
       console.log("error in identifyAndCreateUserTool ", e);
     }

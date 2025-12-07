@@ -3,6 +3,9 @@
   "module": "index.ts",
   "type": "commonjs",
   "private": true,
+  "scripts": {
+    "start": "bun run ./src/index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@repo/typescript-config": "workspace:*",

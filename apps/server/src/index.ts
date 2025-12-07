@@ -1,13 +1,10 @@
-import express from "express";
+import express, { Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { authRouter } from "./routes/auth";
-import { getDataRouter } from "./routes/data";
 import { chatRouter } from "./routes/chat";
+import { PORT } from "./utils";
 
 export const app = express();
-
-app.use(express.json());
 
 app.use(cookieParser());
 
@@ -21,6 +18,14 @@ app.use(
   })
 );
 
-app.use("api/v1/auth", authRouter);
-app.use("api/v1/chat", chatRouter);
-app.use("api/v1/data", getDataRouter);
+app.use(express.json());
+
+app.use("/api/v1/chat", chatRouter);
+
+app.get("/health", (_, res: Response) => {
+  res.send("good");
+});
+
+app.listen(PORT, () => {
+  console.log("server is running at", PORT);
+});
