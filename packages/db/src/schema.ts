@@ -6,16 +6,15 @@ import {
   boolean,
   pgEnum,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
 
-export const orderStatusEnums = pgEnum("status", [
+export const orderStatusEnums = pgEnum("order_status", [
   "PENDING",
   "CONFIRMED",
   "DELIVERED",
   "REJECTED",
 ]);
 
-export const paymentStatusEnums = pgEnum("status", [
+export const paymentStatusEnums = pgEnum("payment_status", [
   "PENDING",
   "CONFIRMED",
   "FAILED",
@@ -48,7 +47,7 @@ export const orders = pgTable("orders", {
   id: uuid("id").notNull().defaultRandom().primaryKey(),
   productName: text("productName").notNull(),
   imgUrl: text("imgUrl").notNull(),
-  status: orderStatusEnums("status").notNull(),
+  status: orderStatusEnums("order_status").notNull(),
 
   userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
 
@@ -59,11 +58,7 @@ export const orders = pgTable("orders", {
 export const payments = pgTable("payments", {
   id: uuid("id").notNull().defaultRandom().primaryKey(),
   amount: text("amount").notNull(),
-  status: paymentStatusEnums("status").notNull(),
-
-  orderId: uuid("orderId")
-    .references(() => orders.id, { onDelete: "cascade" })
-    .notNull(),
+  status: paymentStatusEnums("payment_status").notNull(),
 
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),

@@ -4,6 +4,8 @@ import useSendMessage from "@/hooks/useSendMessages";
 import { FrontendMessage, paramsType } from "@repo/types/types";
 import { useEffect, useState } from "react";
 import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
+import { parseBotResponse } from "@/utils";
+import { ResponseCards } from "./ResponseCards";
 
 const MESSAGE_KEY = "all_message_key";
 
@@ -14,9 +16,6 @@ export default function ChatPage() {
     JSON.parse(localStorage.getItem(MESSAGE_KEY) ?? "[]")
   );
   const [text, setText] = useState<string>("");
-
-  // "orders" | "payments" | "deals" | null;
-  const [relatedTo, setRelatedTo] = useState<paramsType | null>(null);
 
   const getMessages = () => {
     try {
@@ -49,26 +48,57 @@ export default function ChatPage() {
         {loading && messages.length === 0 ? (
           <p className="text-center text-neutral-500">Fetching chats...</p>
         ) : (
-          messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`flex ${
-                msg.sender === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
+          messages.map((msg, idx) => {
+            const parsed =
+              msg.sender === "assistant" ? parseBotResponse(msg.text) : null;
+
+            // Assistant → cards
+            if (
+              msg.sender === "assistant" &&
+              parsed &&
+              parsed.relatedTo &&
+              Array.isArray(parsed.message)
+            ) {
+              return (
+                <div key={idx} className="flex justify-start">
+                  <ResponseCards
+                    type={parsed.relatedTo}
+                    data={parsed.message}
+                  />
+                </div>
+              );
+            }
+
+            // Decide bubble content
+            const bubbleText =
+              msg.sender === "assistant" &&
+              parsed &&
+              typeof parsed.message === "string"
+                ? parsed.message
+                : msg.text;
+
+            // Normal chat bubble
+            return (
               <div
-                className={`max-w-[70%] p-3 rounded-lg text-sm whitespace-pre-wrap
-                  ${
-                    msg.sender === "user"
-                      ? "bg-green-600 text-white rounded-br-none"
-                      : "bg-neutral-200 text-neutral-900 rounded-bl-none"
-                  }
-                `}
+                key={idx}
+                className={`flex ${
+                  msg.sender === "user" ? "justify-end" : "justify-start"
+                }`}
               >
-                {msg.text}
+                <div
+                  className={`max-w-[70%] p-3 rounded-lg text-sm whitespace-pre-wrap
+                ${
+                  msg.sender === "user"
+                    ? "bg-green-600 text-white rounded-br-none"
+                    : "bg-neutral-200 text-neutral-900 rounded-bl-none"
+                }
+              `}
+                >
+                  {bubbleText}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
 
         {/* Typing Indicator */}
@@ -113,7 +143,7 @@ export default function ChatPage() {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               if (!text.trim()) return;
-              sendMessage(text, messages, setMessages, setRelatedTo);
+              sendMessage(text, messages, setMessages);
               setText("");
             }
           }}
@@ -123,7 +153,7 @@ export default function ChatPage() {
           disabled={loading}
           onClick={() => {
             if (!text.trim()) return;
-            sendMessage(text, messages, setMessages, setRelatedTo);
+            sendMessage(text, messages, setMessages);
             setText("");
           }}
           className="bg-green-600 text-white p-3 rounded-lg disabled:opacity-50 flex items-center"

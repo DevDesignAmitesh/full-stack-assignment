@@ -12,8 +12,7 @@ export default function useSendMessage() {
   async function sendMessage(
     input: string,
     allMessages: FrontendMessage[],
-    setMessages: Dispatch<SetStateAction<FrontendMessage[]>>,
-    setRelatedTo: Dispatch<SetStateAction<paramsType>>
+    setMessages: Dispatch<SetStateAction<FrontendMessage[]>>
   ) {
     if (loading) return;
     try {
@@ -55,7 +54,6 @@ export default function useSendMessage() {
 
       if (res.status === 201) {
         console.log("this is the response from the ai", response);
-        setRelatedTo(response.relatedTo);
         setMessages((prev) => [
           ...prev,
           {

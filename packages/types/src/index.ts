@@ -36,5 +36,38 @@ export type paramsType = "orders" | "payments" | "deals" | null;
 
 export const dynamicDataSchema = z.object({
   type: z.enum(["orders", "payments", "deals"]),
-  orderId: z.uuid().optional(),
 });
+
+export interface Deal {
+  id: string;
+  title: string;
+  description: string;
+  price: string;
+  imgUrl: string;
+  isActive: boolean;
+
+  createdAt: Date;
+}
+
+export type OrderStatus = "PENDING" | "CONFIRMED" | "DELIVERED" | "REJECTED";
+
+export interface Order {
+  id: string;
+  productName: string;
+  imgUrl: string;
+  status: OrderStatus;
+
+  userId?: string | null;
+
+  createdAt: Date;
+}
+
+export type PaymentStatus = "PENDING" | "CONFIRMED" | "FAILED";
+
+export interface Payment {
+  id: string;
+  amount: string;
+  status: PaymentStatus;
+
+  createdAt: Date;
+}

@@ -12,7 +12,7 @@ export const fetchDynamicDataTool = tool(
       };
     }
 
-    const { type, orderId } = parsed.data;
+    const { type } = parsed.data;
 
     if (type === "deals") {
       const deals = await db.query.deals.findMany({
@@ -34,15 +34,7 @@ export const fetchDynamicDataTool = tool(
     }
 
     if (type === "payments") {
-      if (!orderId) {
-        return {
-          status: "orderId_required",
-        };
-      }
-
-      const payments = await db.query.payments.findMany({
-        where: eq(schema.payments.orderId, orderId),
-      });
+      const payments = await db.query.payments.findMany();
 
       return {
         status: "ok",
