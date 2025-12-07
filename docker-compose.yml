@@ -27,6 +27,6 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:mysecretpassword@db:5432/full-stack-test
       - JWT_SECRET=secret818818188181810202030030202
-      - OPEN_API_KEY=sk-proj-_zQBTyxaou2XEXB8QCtNjc2BISL6lfHvjvQIw08zToyCCAg4xJHecs8uGWYzaJa6B1g
+      # - OPEN_API_KEY=sk-proj-_zQBTyxaou2XEXB8QCtNjc2BISL6lfHvjvQIw08zToyCCAg4xJHecs8uGWYzaJa6B1g
     depends_on:
       - db
