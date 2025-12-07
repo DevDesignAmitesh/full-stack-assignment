@@ -10,7 +10,9 @@ const MESSAGE_KEY = "all_message_key";
 export default function ChatPage() {
   const { loading, sendMessage } = useSendMessage();
 
-  const [messages, setMessages] = useState<FrontendMessage[]>([]);
+  const [messages, setMessages] = useState<FrontendMessage[]>(
+    JSON.parse(localStorage.getItem(MESSAGE_KEY) ?? "[]")
+  );
   const [text, setText] = useState<string>("");
 
   // "orders" | "payments" | "deals" | null;

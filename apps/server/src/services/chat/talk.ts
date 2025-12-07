@@ -10,6 +10,8 @@ export const talkRequest = async (
   try {
     const { success, data, error } = chatSchema.safeParse(req.body);
 
+    console.log("this is the data from the frontend", data);
+
     if (!success) {
       const errorMessage = error.issues
         .map((er) => `${er.path.join(".")}: ${er.message}`)
@@ -27,22 +29,13 @@ export const talkRequest = async (
     const { recentMessage, allMessages } = data;
 
     // message which will be set in the inmemory and db for the assistant role
-    let parsed: {
-      relatedTo: paramsType;
-      message: string;
-    } | null = {
-      message: "",
-      relatedTo: null,
-    };
+    let parsed;
 
     try {
-      await createCompletion(
-        [...allMessages, { message: recentMessage, role: "user" }],
-        (chunk) => {
-          console.log("data from ai", chunk);
-          parsed = parseBotResponse(chunk);
-        }
-      );
+      parsed = await createCompletion([
+        ...allMessages,
+        { message: recentMessage, role: "user" },
+      ]);
     } catch (error) {
       console.log(error);
       return responsePlate({

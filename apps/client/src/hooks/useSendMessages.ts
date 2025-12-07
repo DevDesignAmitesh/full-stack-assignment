@@ -59,7 +59,7 @@ export default function useSendMessage() {
         setMessages((prev) => [
           ...prev,
           {
-            text: response.message,
+            text: JSON.stringify(response),
             id: uuid(),
             sender: "assistant",
             timestamp: new Date(),

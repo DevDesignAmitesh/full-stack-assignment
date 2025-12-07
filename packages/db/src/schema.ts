@@ -2,7 +2,6 @@ import {
   pgTable,
   uuid,
   text,
-  integer,
   timestamp,
   boolean,
   pgEnum,
@@ -25,7 +24,7 @@ export const paymentStatusEnums = pgEnum("status", [
 export const users = pgTable("users", {
   id: uuid("id").notNull().defaultRandom().primaryKey(),
   name: text("name").notNull(),
-  number: integer("number").notNull().unique(),
+  number: text("number").notNull().unique(),
   email: text("email"),
   address: text("address"),
 
@@ -37,7 +36,7 @@ export const deals = pgTable("deals", {
   id: uuid("id").notNull().defaultRandom().primaryKey(),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  price: integer("price").notNull(),
+  price: text("price").notNull(),
   imgUrl: text("imgUrl").notNull(),
   isAcive: boolean("isAcive").notNull(),
 
@@ -59,7 +58,7 @@ export const orders = pgTable("orders", {
 
 export const payments = pgTable("payments", {
   id: uuid("id").notNull().defaultRandom().primaryKey(),
-  amount: integer("amount").notNull(),
+  amount: text("amount").notNull(),
   status: paymentStatusEnums("status").notNull(),
 
   orderId: uuid("orderId")
@@ -69,14 +68,3 @@ export const payments = pgTable("payments", {
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),
 });
-
-export const userRelations = relations(users, ({ many }) => ({
-  orders: many(orders),
-}));
-
-export const paymentRelations = relations(payments, ({ one }) => ({
-  orders: one(orders, {
-    references: [orders.id],
-    fields: [payments.orderId],
-  }),
-}));

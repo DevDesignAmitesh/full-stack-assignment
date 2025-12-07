@@ -1,20 +1,28 @@
 import "dotenv/config";
 import { Response } from "express";
-// import { ChatOpenAI } from "@langchain/openai";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { createReactAgent } from "@langchain/langgraph/prebuilt";
+import { ChatOpenAI } from "@langchain/openai";
 import type { Message, paramsType } from "@repo/types/types";
 import { AI_PROMPT } from "../prompt";
 import { fetchDynamicDataTool } from "../tool/fetchDynamicDataTool";
 import { identifyAndCreateUserTool } from "../tool/identifyAndCreateUserTool";
+import {
+  ToolMessage,
+  SystemMessage,
+  HumanMessage,
+  AIMessage,
+} from "@langchain/core/messages";
+import type { BaseMessage } from "@langchain/core/messages";
 
 if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET not found");
 }
 
-if (!process.env.GEMINI_API_KEY) {
+if (!process.env.OPEN_API_KEY) {
   throw new Error("process.env.GEMINI_API_KEY not found");
 }
+
+export const PORT = 4000;
+export const HTTP_URL = `https://locolhost:${PORT}/api/v1`;
 
 export const responsePlate = ({
   res,
@@ -78,55 +86,61 @@ export function parseBotResponse(rawString: string): {
   }
 }
 
-export const createCompletion = async (
-  messages: Message[],
-  cb: (chunk: string) => void
-) => {
-  // const model = new ChatOpenAI({
-  //   model: "gpt-4.1",
-  //   temperature: 1,
-  //   apiKey: "",
-  // });
-
-  const model = new ChatGoogleGenerativeAI({
-    model: "gemini-2.5-flash",
-    temperature: 1,
-    apiKey: process.env.GEMINI_API_KEY!,
-  });
-
-  const agent = createReactAgent({
-    llm: model,
-    tools: [fetchDynamicDataTool, identifyAndCreateUserTool],
-  });
-
-  const langchainMessages = [
-    { role: "system", content: AI_PROMPT },
-    ...messages.map((m) => ({
-      role: m.role,
-      content: m.message,
-    })),
-  ];
-
-  const result = await agent.invoke({ messages: langchainMessages });
-
-  console.log("result from ai", result.messages[2]?.content);
-
-  // // 🔍 Extract the last AI message
-
-  // const aiMessage = [result.messages[2]]
-  //   .reverse()
-  //   .find((m) => m instanceof AIMessage);
-
-  // if (aiMessage?.content) {
-  //   const content =
-  //     typeof aiMessage.content === "string"
-  //       ? aiMessage.content
-  //       : JSON.stringify(aiMessage.content);
-
-  // }
-  console.log(typeof result.messages[2]?.content);
-  cb(result.messages[2]?.content as string);
+const toolMap = {
+  identifyAndCreateUserTool,
+  fetchDynamicDataTool,
 };
 
-export const PORT = 4000;
-export const HTTP_URL = `https://locolhost:${PORT}/api/v1`;
+export const createCompletion = async (messages: Message[]) => {
+  const model = new ChatOpenAI({
+    model: "gpt-4.1",
+    temperature: 0.2,
+    apiKey: process.env.OPEN_API_KEY,
+  });
+
+  const modelWithTools = model.bindTools([
+    identifyAndCreateUserTool,
+    fetchDynamicDataTool,
+  ]);
+
+  const langchainMessages: BaseMessage[] = [
+    new SystemMessage({ content: AI_PROMPT }),
+    ...messages.map((m) =>
+      m.role === "assistant"
+        ? new AIMessage({ content: m.message })
+        : new HumanMessage({ content: m.message })
+    ),
+  ];
+
+  // 1️⃣ First call
+  const result = await modelWithTools.invoke(langchainMessages);
+
+  // ✅ Case 1: tool call present
+  if (result.tool_calls?.length) {
+    // ✅ VERY IMPORTANT: push THE SAME assistant message
+    langchainMessages.push(result);
+
+    const toolCall = result.tool_calls[0];
+    const tool = toolMap[toolCall?.name as keyof typeof toolMap];
+    const toolResult = await (tool as any).invoke(toolCall?.args);
+
+    // ✅ ToolMessage MUST come immediately after the AI tool call
+    langchainMessages.push(
+      new ToolMessage({
+        tool_call_id: toolCall?.id!,
+        content: JSON.stringify(toolResult),
+      })
+    );
+
+    // 2️⃣ Final model call
+    const finalResult = await modelWithTools.invoke(langchainMessages);
+    return finalResult.content;
+  }
+
+  // ✅ Case 2: no tool call → normal text response
+  if (typeof result.content === "string") {
+    return result.content;
+  }
+
+  return null;
+};

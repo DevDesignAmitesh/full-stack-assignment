@@ -4,73 +4,57 @@ import { db, eq, schema } from "@repo/db/db";
 
 export const fetchDynamicDataTool = tool(
   async (input: unknown) => {
-    try {
-      console.log("fetch order tool called", input);
-      const { data, success, error } = dynamicDataSchema.safeParse(input);
+    const parsed = dynamicDataSchema.safeParse(input);
 
-      if (!success) {
-        return {
-          type: "invalid_inputs",
-        };
-      }
-
-      const { type, orderId } = data;
-
-      if (type === "deals") {
-        const deals = await db.query.deals.findMany({
-          where: eq(schema.deals.isAcive, true),
-        });
-
-        if (deals.length === 0) {
-          return {
-            message: "data_not_found",
-          }
-        }
-
-        return {
-          type: "data_found",
-          data: deals,
-        }
-
-      } else if (type === "orders") {
-        const orders = await db.query.orders.findMany();
-
-        if (orders.length === 0) {
-          return {
-            message: "data_not_found",
-          }
-        }
-
-        return {
-          type: "data_found",
-          data: orders
-        };
-      } else if (type === "payments") {
-        if (!orderId) {
-          return {
-            type: "orderId_not_found"
-          }
-        }
-
-        const payments = await db.query.payments.findMany({
-          where: eq(schema.payments.orderId, orderId),
-        });
-
-        if (payments.length === 0) {
-          return {
-            message: "data_not_found",
-          }
-        }
-
-        return {
-          type: "data_found",
-          data: payments
-        };
-      }
-    } catch (e) {
-      console.log("error in fetchDynamicDataTool ", e);
+    if (!parsed.success) {
+      return {
+        status: "invalid_inputs",
+      };
     }
+
+    const { type, orderId } = parsed.data;
+
+    if (type === "deals") {
+      const deals = await db.query.deals.findMany({
+        where: eq(schema.deals.isAcive, true),
+      });
+
+      return {
+        status: "ok",
+        data: deals,
+      };
+    }
+
+    if (type === "orders") {
+      const orders = await db.query.orders.findMany();
+      return {
+        status: "ok",
+        data: orders,
+      };
+    }
+
+    if (type === "payments") {
+      if (!orderId) {
+        return {
+          status: "orderId_required",
+        };
+      }
+
+      const payments = await db.query.payments.findMany({
+        where: eq(schema.payments.orderId, orderId),
+      });
+
+      return {
+        status: "ok",
+        data: payments,
+      };
+    }
+
+    return {
+      status: "invalid_type",
+    };
   },
+
   {
     name: "fetchDynamicDataTool",
     description: `

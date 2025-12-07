@@ -4,58 +4,47 @@ import { db, eq, schema } from "@repo/db/db";
 
 export const identifyAndCreateUserTool = tool(
   async (input: unknown) => {
-    try {
-      console.log("user tool called", input);
-      const { data, success, error } = createUserSchema.safeParse(input);
+    const parsed = createUserSchema.safeParse(input);
 
-      if (!success) {
-        return {
-          type: "invalid_inputs",
-          error,
-        };
-      }
-
-      const { name, number } = data;
-
-      const existingUser = await db.query.users.findFirst({
-        where: eq(schema.users.number, Number(number)),
-      });
-
-      if (existingUser) {
-        return {
-          type: "user_already_exists",
-        };
-      }
-
-      await db
-        .insert(schema.users)
-        .values({
-          name,
-          number: Number(number),
-        })
-        .returning({
-          id: schema.users.id,
-        })
-        .then(([data]) => {
-          if (!data?.id) {
-            return {
-              type: "internal_server_error",
-            };
-          }
-          return {
-            type: "user_created",
-          };
-        })
-        .catch((e) => {
-          console.log("this is the db error", e);
-          return {
-            type: "internal_server_error",
-          };
-        });
-    } catch (e) {
-      console.log("error in identifyAndCreateUserTool ", e);
+    if (!parsed.success) {
+      return {
+        status: "invalid_inputs",
+        errors: parsed.error.flatten(),
+      };
     }
+
+    const { name, number } = parsed.data;
+
+    const existingUser = await db.query.users.findFirst({
+      where: eq(schema.users.number, number),
+    });
+
+    if (existingUser) {
+      return {
+        status: "user_already_exists",
+        userId: existingUser.id,
+        name: existingUser.name,
+      };
+    }
+
+    const [created] = await db
+      .insert(schema.users)
+      .values({ name, number })
+      .returning({ id: schema.users.id });
+
+    if (!created?.id) {
+      return {
+        status: "error",
+      };
+    }
+
+    return {
+      status: "user_created",
+      userId: created.id,
+      name,
+    };
   },
+
   {
     name: "identifyAndCreateUserTool",
     description: `
