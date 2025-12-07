@@ -23,6 +23,10 @@ if (!process.env.OPEN_API_KEY) {
 
 export const PORT = 4000;
 export const HTTP_URL = `https://locolhost:${PORT}/api/v1`;
+export const FRONTEND_URL =
+  process.env.NODE_ENV === "devlopment"
+    ? `https://locolhost:3000`
+    : "https://full-stack-assignment-client.vercel.app";
 
 export const responsePlate = ({
   res,

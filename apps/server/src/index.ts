@@ -2,7 +2,7 @@ import express, { Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { chatRouter } from "./routes/chat";
-import { PORT } from "./utils";
+import { FRONTEND_URL, PORT } from "./utils";
 
 export const app = express();
 
@@ -10,7 +10,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: [FRONTEND_URL],
 
     // for docker
     // origin: ["http://client:3000"],
