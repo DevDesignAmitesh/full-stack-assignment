@@ -5,8 +5,8 @@ export const ArrowCircle = () => {
     <span
       className="
         ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full
-        bg-linear-to-r from-green-500 to-emerald-400
-        text-white
+        bg-[#a3e635]
+        text-black
         transition-all duration-200
         group-hover:translate-x-1
       "
