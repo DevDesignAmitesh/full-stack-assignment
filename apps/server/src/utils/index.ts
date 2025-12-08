@@ -18,14 +18,20 @@ if (!process.env.JWT_SECRET) {
 }
 
 if (!process.env.OPEN_API_KEY) {
-  throw new Error("process.env.GEMINI_API_KEY not found");
+  throw new Error("OPEN_API_KEY not found");
 }
 
+if (!process.env.NODE_ENV) {
+  throw new Error("NODE_ENV not found");
+}
+
+console.log(process.env.NODE_ENV)
+
 export const PORT = 4000;
-export const HTTP_URL = `https://locolhost:${PORT}/api/v1`;
+export const HTTP_URL = `http://localhost:${PORT}/api/v1`;
 export const FRONTEND_URL =
-  process.env.NODE_ENV === "devlopment"
-    ? `https://locolhost:3000`
+  process.env.NODE_ENV === "development"
+    ? `http://localhost:3000`
     : "https://full-stack-assignment-client.vercel.app";
 
 export const responsePlate = ({

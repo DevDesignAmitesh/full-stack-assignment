@@ -18,6 +18,7 @@ export default function ChatPage() {
   const getMessages = () => {
     try {
       const stored = localStorage.getItem(MESSAGE_KEY);
+      console.log(stored);
       if (stored) {
         setMessages(JSON.parse(stored));
       }
@@ -35,12 +36,12 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    savingMessages();
-  }, [messages]);
-
-  useEffect(() => {
     getMessages();
   }, []);
+
+  useEffect(() => {
+    savingMessages();
+  }, [messages]);
 
   return (
     <div className="flex flex-col h-screen max-w-xl mx-auto border-x border-neutral-300">
