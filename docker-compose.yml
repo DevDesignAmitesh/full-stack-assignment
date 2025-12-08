@@ -9,24 +9,24 @@ services:
       - POSTGRES_PASSWORD=mysecretpassword
       - POSTGRES_DB=full-stack-test
 
-  # client:
-  #   build:
-  #     context: "."
-  #     dockerfile: "./dockerfile/dockerfile.client"
-  #   ports:
-  #     - 3000:3000
-  #   depends_on:
-  #     - server
+  client:
+    build:
+      context: "."
+      dockerfile: "./dockerfile/dockerfile.client"
+    ports:
+      - 3000:3000
+    depends_on:
+      - server
 
-  # server:
-  #   build:
-  #     context: "."
-  #     dockerfile: "./dockerfile/dockerfile.server"
-  #   ports:
-  #     - 4000:4000
-  #   environment:
-  #     - DATABASE_URL=postgresql://postgres:mysecretpassword@db:5432/full-stack-test
-  #     - JWT_SECRET=secret818818188181810202030030202
-  #     # - OPEN_API_KEY=sk-proj-_zQBTyxaou2XEXB8QCtNjc2BISL6lfHvjvQIw08zToyCCAg4xJHecs8uGWYzaJa6B1g
-  #   depends_on:
-  #     - db
+  server:
+    build:
+      context: "."
+      dockerfile: "./dockerfile/dockerfile.server"
+    ports:
+      - 4000:4000
+    environment:
+      - DATABASE_URL=postgresql://postgres:mysecretpassword@db:5432/full-stack-test
+      - JWT_SECRET=secret818818188181810202030030202
+      # - OPEN_API_KEY=sk-proj-_zQBTyxaou2XEXB8QCtNjc2BISL6lfHvjvQIw08zToyCCAg4xJHecs8uGWYzaJa6B1g
+    depends_on:
+      - db
