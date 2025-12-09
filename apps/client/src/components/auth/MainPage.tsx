@@ -15,6 +15,7 @@ import { UserSignup } from "@repo/types/types";
 import { useSearchParams } from "next/navigation";
 import { useSignup } from "@/hooks/useSignup";
 import { useSignin } from "@/hooks/useSignin";
+import { BackButton } from "../BackButton";
 
 const containerVariants = {
   hidden: {},
@@ -76,9 +77,7 @@ export const MainPage = ({ role }: { role: mode }) => {
     <div className="w-full h-screen bg-white">
       <div className="relative w-full h-full max-w-xl mx-auto border-x-2 border-neutral-300 flex flex-col pt-8 px-6">
         {/* Back button */}
-        <div className="bg-neutral-100 text-neutral-800 rounded-full flex justify-center items-center p-2 absolute left-5 top-5">
-          <IoIosArrowRoundBack size={25} />
-        </div>
+        <BackButton />
 
         <h1 className="text-4xl font-semibold text-neutral-800 mt-12">
           {mode === "signin" ? "Welcome Back" : "Create Account"}

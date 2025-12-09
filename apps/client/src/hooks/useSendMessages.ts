@@ -1,5 +1,5 @@
-import { HTTP_URL } from "@/utils";
-import { FrontendMessage, paramsType } from "@repo/types/types";
+import { HTTP_URL, parseBotResponse } from "@/utils";
+import { chatRole, FrontendMessage, paramsType } from "@repo/types/types";
 import axios from "axios";
 import { matchesGlob } from "path";
 import { Dispatch, SetStateAction, useState } from "react";
@@ -39,13 +39,13 @@ export default function useSendMessage() {
         },
         {
           withCredentials: true,
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
         }
       );
 
-      const response = res?.data?.data as {
-        relatedTo: paramsType;
-        message: string;
-      } | null;
+      const response = res?.data?.data;
 
       if (!response) {
         toast.error("unable to parse ai response");
@@ -53,19 +53,31 @@ export default function useSendMessage() {
       }
 
       if (res.status === 201) {
-        console.log("this is the response from the ai", response);
+        console.log("this is the responfe from the ai", response)
+        const parsed = parseBotResponse(JSON.stringify(response));
+
+        if (!parsed) return;
+
         setMessages((prev) => [
           ...prev,
-          {
-            text: JSON.stringify(response),
+          ...parsed.map((item) => ({
             id: uuid(),
-            sender: "assistant",
+            sender: "assistant" as chatRole,
+            text:
+              typeof item.message === "string"
+                ? item.message
+                : JSON.stringify(item.message),
+            relatedTo: item.relatedTo,
             timestamp: new Date(),
-          },
+          })),
         ]);
+
         return;
       }
+
       toast.error(res?.data?.message ?? "Internal server error");
+
+      return;
     } catch (error: any) {
       console.log("error in send message", error);
       toast.error(error?.response?.data?.message ?? "Internal server error");

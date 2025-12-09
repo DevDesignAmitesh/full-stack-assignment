@@ -1,11 +1,26 @@
 import { chatRole } from "@repo/types/types";
 
-export const Message = ({ role }: { role: chatRole }) => {
+export const Message = ({
+  role,
+  message,
+}: {
+  role: chatRole;
+  message: string;
+}) => {
+  const isUser = role === "user";
+
   return (
-    <p
-      className={`p-4 rounded-xl ${role === "user" ? "rounded-br-none bg-neutral-800 text-neutral-100" : "rounded-bl-none text-neutral-800 bg-neutral-100"}`}
-    >
-      hello this is the test by the ai
-    </p>
+    <div className={`w-full flex ${isUser ? "justify-end" : "justify-start"}`}>
+      <p
+        className={`
+          max-w-[75%] px-4 py-3 rounded-2xl shadow-sm
+          ${isUser
+            ? "bg-neutral-800 text-white rounded-br-sm"
+            : "bg-white text-neutral-800 rounded-bl-sm"}
+        `}
+      >
+        {message}
+      </p>
+    </div>
   );
 };

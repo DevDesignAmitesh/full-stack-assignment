@@ -8,10 +8,12 @@ export const HTTP_URL =
 // for docker
 // export const HTTP_URL = "http://server:4000/api/v1";
 
-export function parseBotResponse(rawString: string): {
-  relatedTo: paramsType;
-  message: string | any[];
-} | null {
+export function parseBotResponse(rawString: string):
+  | {
+      relatedTo: paramsType;
+      message: string | any[];
+    }[]
+  | null {
   if (!rawString || typeof rawString !== "string") return null;
 
   try {
@@ -20,39 +22,23 @@ export function parseBotResponse(rawString: string): {
     // Remove markdown fences
     cleaned = cleaned.replace(/```json|```/g, "").trim();
 
-    /**
-     * FIX #1: Handle double-encoded JSON safely
-     * If it starts & ends with quotes, it's stringified JSON
-     */
+    // Handle double-encoded JSON
     if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
       cleaned = JSON.parse(cleaned);
     }
 
-    /**
-     * FIX #2: Extract JSON object
-     */
-    const jsonStart = cleaned.indexOf("{");
-    const jsonEnd = cleaned.lastIndexOf("}");
+    // Parse JSON
+    const parsed = JSON.parse(cleaned);
 
-    if (jsonStart === -1 || jsonEnd === -1) return null;
+    // ✅ NEW: ensure it's an array
+    if (!Array.isArray(parsed)) return null;
 
-    const sliced = cleaned.slice(jsonStart, jsonEnd + 1);
-    const parsed = JSON.parse(sliced);
-
-    /**
-     * FIX #3: Allow message to be string OR array
-     */
-    if (
-      (typeof parsed.relatedTo === "string" || parsed.relatedTo === null) &&
-      (typeof parsed.message === "string" || Array.isArray(parsed.message))
-    ) {
-      return {
-        relatedTo: parsed.relatedTo,
-        message: parsed.message,
-      };
-    }
-
-    return null;
+    // Validate each item
+    return parsed.filter(
+      (item) =>
+        (typeof item.relatedTo === "string" || item.relatedTo === null) &&
+        (typeof item.message === "string" || Array.isArray(item.message))
+    );
   } catch (err) {
     console.error("parseBotResponse error:", err);
     return null;

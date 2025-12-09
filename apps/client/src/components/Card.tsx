@@ -1,4 +1,6 @@
-export function Card() {
+import { Deal } from "@repo/types/types";
+
+export function Card({ data }: { data: Deal }) {
   return (
     <div className="w-full flex justify-center items-center">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 flex flex-col gap-4">
@@ -6,13 +8,13 @@ export function Card() {
         <div className="flex gap-4">
           <div className="w-20 h-20 rounded-xl overflow-hidden bg-neutral-200 shrink-0">
             {/* Replace with actual img */}
-            {/* <img src="/product.png" alt="product" className="w-full h-full object-cover" /> */}
+            <img src={data?.imgUrl} alt="product" className="w-full h-full object-cover" />
           </div>
 
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-neutral-800 leading-tight">
-                TWS Wireless Earbus Bluetooth 5.3
+                {data?.title}
               </h3>
               <span className="text-[10px] font-medium bg-neutral-100 px-2 py-0.5 rounded-full">
                 Flipkart
@@ -25,7 +27,7 @@ export function Card() {
             </div>
 
             <p className="text-green-600 font-semibold text-sm">
-              PP ~ ₹499
+              PP ~ ₹{data?.price}
             </p>
           </div>
         </div>
@@ -43,7 +45,7 @@ export function Card() {
 
         {/* CTA Button */}
         <button
-          className="w-full bg-black text-white font-semibold py-3 rounded-full flex justify-center items-center gap-2"
+          className="w-full bg-black text-white font-semibold py-3 rounded-full flex justify-center items-center gap-2 text-[13px]"
         >
           ↗ GET LINK / DM
         </button>

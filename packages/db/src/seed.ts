@@ -20,7 +20,7 @@ async function main() {
       db.query.payments.findMany(),
     ]);
 
-    if (orders.length === 0 && deals.length === 0 && payments.length === 0) {
+    if (orders.length !== 0 && deals.length !== 0 && payments.length !== 0) {
       console.log("Database already seeded!!");
       process.exit(0);
     }

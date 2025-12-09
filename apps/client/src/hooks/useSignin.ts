@@ -19,6 +19,7 @@ export const useSignin = () => {
       if (res.status === 200) {
         toast.success(res?.data?.message ?? "signin successfull");
         localStorage.setItem("user_name", res?.data?.data?.name);
+        localStorage.setItem("token", res?.data?.data?.token);
         router.push("/chat");
         return;
       }

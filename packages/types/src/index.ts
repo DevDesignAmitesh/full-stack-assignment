@@ -24,15 +24,15 @@ export interface Message {
   role: chatRole;
   message: string;
 }
+export type paramsType = "orders" | "payments" | "deals" | null;
 
 export interface FrontendMessage {
   id: string;
   text: string;
   sender: chatRole;
   timestamp: Date;
+  relatedTo?: paramsType
 }
-
-export type paramsType = "orders" | "payments" | "deals" | null;
 
 export const dynamicDataSchema = z.object({
   type: z.enum(["orders", "payments", "deals"]),
@@ -56,9 +56,7 @@ export interface Order {
   productName: string;
   imgUrl: string;
   status: OrderStatus;
-
-  userId?: string | null;
-
+  quantity: string
   createdAt: Date;
 }
 
@@ -68,6 +66,8 @@ export interface Payment {
   id: string;
   amount: string;
   status: PaymentStatus;
+  imgUrl: string;
+  description: string;
 
   createdAt: Date;
 }
@@ -84,6 +84,6 @@ export type UserSignup = z.infer<typeof signupSchema>;
 export const signinSchema = z.object({
   email: z.email().min(4),
   password: z.string().min(4),
-})
+});
 
 export type UserSignin = z.infer<typeof signinSchema>;
