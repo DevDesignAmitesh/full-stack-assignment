@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { generateTokem, responsePlate } from "../../utils";
+import { responsePlate } from "../../utils";
 import { signupSchema, zodErrorMessage } from "@repo/types/types";
-import { db, eq, schema, and } from "@repo/db/db";
+import { db, eq, schema, or } from "@repo/db/db";
 import { hash } from "bcryptjs";
 
 export const signupRequest = async (req: Request, res: Response) => {
@@ -19,10 +19,7 @@ export const signupRequest = async (req: Request, res: Response) => {
     const { email, number, name, password } = data;
 
     const existingUser = await db.query.users.findFirst({
-      where: and(
-        eq(schema.users.number, number),
-        eq(schema.users.email, email)
-      ),
+      where: or(eq(schema.users.number, number), eq(schema.users.email, email)),
     });
 
     if (existingUser) {
@@ -51,6 +48,14 @@ export const signupRequest = async (req: Request, res: Response) => {
         });
       })
       .catch((e) => {
+        // UNIQUE constraint violation
+        if (e?.code === "23505") {
+          return responsePlate({
+            res,
+            message: "Email or phone number already exists",
+            status: 400,
+          });
+        }
         console.log("database error ", e);
         return responsePlate({
           res,
