@@ -240,6 +240,7 @@ export default function Chat() {
           />
           <div className="w-full md:px-16">
             <TextArea
+              loading={loading}
               value={text}
               onChange={setText}
               sendMessage={sendMessage}

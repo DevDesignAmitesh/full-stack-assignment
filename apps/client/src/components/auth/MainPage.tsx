@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import {
   IoMailOutline,
@@ -15,6 +15,11 @@ import { useSignup } from "@/hooks/useSignup";
 import { useSignin } from "@/hooks/useSignin";
 import { BackButton } from "../BackButton";
 import { useRouter } from "next/navigation";
+
+const DEMO_CREDENTIALS = {
+  email: "demo@gmail.com",
+  password: "demo@123",
+};
 
 const containerVariants = {
   hidden: {},
@@ -71,6 +76,16 @@ export const MainPage = ({ mode }: { mode: mode }) => {
       handleSignup(form);
     }
   };
+
+  useEffect(() => {
+    if (mode === "signin") {
+      setForm((prev) => ({
+        ...prev,
+        email: DEMO_CREDENTIALS.email,
+        password: DEMO_CREDENTIALS.password,
+      }));
+    }
+  }, [mode]);
 
   return (
     <div className="w-full h-screen bg-white">
@@ -138,6 +153,22 @@ export const MainPage = ({ mode }: { mode: mode }) => {
               value={form.password}
               onChange={(e) => handleChange("password", e.target.value)}
             />
+
+            {mode === "signin" && (
+              <motion.p
+                variants={itemVariants}
+                className="text-xs text-neutral-600 cursor-pointer hover:underline w-full text-center mt-2 inline-block"
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    email: DEMO_CREDENTIALS.email,
+                    password: DEMO_CREDENTIALS.password,
+                  }))
+                }
+              >
+                Use demo credentials
+              </motion.p>
+            )}
           </motion.div>
         </motion.div>
 

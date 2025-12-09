@@ -1,4 +1,4 @@
-import { UserSignin } from "@repo/types/types";
+import { signinSchema, UserSignin, zodErrorMessage } from "@repo/types/types";
 import { useState } from "react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -9,9 +9,16 @@ export const useSignin = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
-  const handleSignin = async (data: UserSignin) => {
+  const handleSignin = async (input: UserSignin) => {
     if (loading) return;
     try {
+      const { data, error, success } = signinSchema.safeParse(input);
+
+      if (!success) {
+        toast.error(zodErrorMessage({ error }));
+        return;
+      }
+
       setLoading(true);
 
       const res = await axios.post(`${HTTP_URL}/auth/signin`, data);
@@ -25,7 +32,7 @@ export const useSignin = () => {
       }
     } catch (e: any) {
       console.log("error in handle Signin ", e);
-      toast.error(e?.response?.data?.message ?? "Something went wrong");
+      toast.error(e?.response?.data?.message ?? "Internal server error");
     } finally {
       setLoading(false);
     }
