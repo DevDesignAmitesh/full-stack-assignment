@@ -57,7 +57,6 @@ export interface Order {
   imgUrl: string;
   status: OrderStatus;
   quantity: string
-  createdAt: Date;
 }
 
 export type PaymentStatus = "PENDING" | "CONFIRMED" | "FAILED";

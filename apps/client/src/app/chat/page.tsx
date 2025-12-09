@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatedMessage } from "@/components/AnimatedMessage";
 import { Card } from "@/components/Card";
 import { MenuComponent } from "@/components/MenuComponent";
 import { Message } from "@/components/Message";
@@ -7,37 +8,44 @@ import { OrderCard } from "@/components/OrderCard";
 import { PaymentCard } from "@/components/PaymentCard";
 import { TextArea } from "@/components/TextArea";
 import useSendMessage from "@/hooks/useSendMessages";
-import { Deal, FrontendMessage, Order, Payment } from "@repo/types/types";
+import {
+  chatRole,
+  Deal,
+  FrontendMessage,
+  Order,
+  Payment,
+} from "@repo/types/types";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { MdDelete, MdOutlineHistory } from "react-icons/md";
 import { v4 as uuid } from "uuid";
 
 const MESSAGE_KEY = "all_message_key";
 
+const INITIAL_MESSAGE = (userName: string) => {
+  return [
+    {
+      id: uuid(),
+      sender: "assistant" as chatRole,
+      text: `Hey there! ${userName ? userName + " " : ""}👋 I'm your personal AI assistant. Are you ready to explore Deals, Orders, or Payments? 😊`,
+      timestamp: new Date(),
+      relatedTo: null,
+    },
+  ];
+};
+
 export default function Chat() {
   const { loading, sendMessage } = useSendMessage();
   const [text, setText] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
+  const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    const name = localStorage.getItem("user_name");
-    if (name) {
-      setUserName(name.charAt(0).toUpperCase() + name.slice(1));
-    }
-  }, []);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  const [messages, setMessages] = useState<FrontendMessage[]>([
-    {
-      id: uuid(),
-      sender: "assistant",
-      text: `Hey there! ${userName ? userName + " " : ""}👋 I'm your personal AI assistant. 
-      Are you ready to explore Deals, Orders, or Payments? 😊`,
-      timestamp: new Date(),
-      relatedTo: null,
-    },
-  ]);
+  const [messages, setMessages] = useState<FrontendMessage[]>(
+    INITIAL_MESSAGE(userName)
+  );
 
   const getMessages = () => {
     try {
@@ -48,6 +56,7 @@ export default function Chat() {
 
         if (Array.isArray(parsed) && parsed.length > 0) {
           setMessages(parsed);
+          setHydrated(true);
           return;
         }
       }
@@ -66,13 +75,32 @@ export default function Chat() {
     }
   };
 
+  const deleteChats = () => {
+    localStorage.removeItem(MESSAGE_KEY);
+    setMessages(INITIAL_MESSAGE(userName));
+  };
+
   useEffect(() => {
     getMessages();
   }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
     savingMessages();
-  }, [messages]);
+  }, [messages, hydrated]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages.length, loading]);
+
+  useEffect(() => {
+    const name = localStorage.getItem("user_name");
+    if (name) {
+      setUserName(name.charAt(0).toUpperCase() + name.slice(1));
+    }
+  }, []);
 
   return (
     <div className="w-full h-screen bg-neutral-100">
@@ -96,25 +124,19 @@ export default function Chat() {
 
           <div className="flex justify-center items-center gap-4">
             <div
-              onClick={() => {
-                localStorage.removeItem(MESSAGE_KEY);
-                setMessages([
-                  {
-                    id: uuid(),
-                    sender: "assistant",
-                    text: `Hey there! ${userName ? userName + " " : ""}👋 I'm your personal AI assistant. Are you ready to explore Deals, Orders, or Payments? 😊`,
-                    timestamp: new Date(),
-                    relatedTo: null,
-                  },
-                ]);
-              }}
-              className="bg-neutral-100 text-red-400 rounded-full flex justify-center items-center p-2"
+              title="delete chats"
+              onClick={deleteChats}
+              className="bg-neutral-100 text-red-400 rounded-full flex justify-center items-center p-2 cursor-pointer"
             >
               <MdDelete size={25} />
             </div>
-            <div className="bg-neutral-100 text-neutral-800 rounded-full flex justify-center items-center p-2">
+            <Link
+              href={"/orders"}
+              title="view history"
+              className="bg-neutral-100 text-neutral-800 rounded-full flex justify-center items-center p-2"
+            >
               <MdOutlineHistory size={25} />
-            </div>
+            </Link>
           </div>
         </div>
 
@@ -137,9 +159,11 @@ export default function Chat() {
                   className="flex gap-4 overflow-x-auto whitespace-nowrap pb-2"
                 >
                   {orders.map((ord: Order) => (
-                    <div key={ord.id} className="inline-block">
-                      <OrderCard data={ord} />
-                    </div>
+                    <AnimatedMessage>
+                      <div key={ord.id} className="inline-block">
+                        <OrderCard data={ord} />
+                      </div>
+                    </AnimatedMessage>
                   ))}
                 </div>
               );
@@ -156,9 +180,11 @@ export default function Chat() {
                   className="flex gap-4 overflow-x-auto whitespace-nowrap pb-2"
                 >
                   {payments.map((pms: Payment) => (
-                    <div key={pms.id} className="inline-block">
-                      <PaymentCard data={pms} />
-                    </div>
+                    <AnimatedMessage>
+                      <div key={pms.id} className="inline-block">
+                        <PaymentCard data={pms} />
+                      </div>
+                    </AnimatedMessage>
                   ))}
                 </div>
               );
@@ -175,23 +201,46 @@ export default function Chat() {
                   className="flex gap-4 overflow-x-auto whitespace-nowrap pb-2"
                 >
                   {deals.map((dls: Deal) => (
-                    <div key={dls.id} className="inline-block">
-                      <Card data={dls} />
-                    </div>
+                    <AnimatedMessage>
+                      <div key={dls.id} className="inline-block">
+                        <Card data={dls} />
+                      </div>
+                    </AnimatedMessage>
                   ))}
                 </div>
               );
             }
 
             return (
-              <Message key={msg.id} role={msg.sender} message={msg.text} />
+              <AnimatedMessage>
+                <Message key={msg.id} role={msg.sender} message={msg.text} />
+              </AnimatedMessage>
             );
           })}
+
+          {loading && (
+            <div className="flex items-start">
+              <div className="bg-white text-neutral-800 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm">
+                <span className="inline-flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-bounce [animation-delay:0ms]" />
+                  <span className="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-bounce [animation-delay:150ms]" />
+                  <span className="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-bounce [animation-delay:300ms]" />
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div ref={bottomRef} />
         </div>
 
         {/* text area */}
         <div className="w-full bg-neutral-50 absolute bottom-0 py-6 px-8 flex flex-col justify-center items-center gap-4">
-          <MenuComponent />
+          <MenuComponent
+            sendMessage={sendMessage}
+            allMessages={messages}
+            setMessages={setMessages}
+            loading={loading}
+          />
           <div className="w-full px-16">
             <TextArea
               value={text}
