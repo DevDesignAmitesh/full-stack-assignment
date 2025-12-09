@@ -1,5 +1,5 @@
 import { MainPage } from "@/components/auth/MainPage";
 
 export default function Home() {
-  return <MainPage role="signin" />;
+  return <MainPage mode="signin" />;
 }

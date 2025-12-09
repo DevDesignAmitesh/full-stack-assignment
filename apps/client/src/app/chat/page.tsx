@@ -106,7 +106,7 @@ export default function Chat() {
     <div className="w-full h-screen bg-neutral-100">
       <div className="relative w-full h-full max-w-xl mx-auto border-x-2 border-neutral-300 flex flex-col">
         {/* header */}
-        <div className="px-4 py-6 bg-white absolute top-0 w-full flex justify-between items-center z-10">
+        <div className="px-4 md:py-6 py-3 bg-white absolute top-0 w-full flex justify-between items-center z-10">
           <Link
             href={"/signin"}
             className="bg-neutral-100 text-neutral-800 rounded-full flex justify-center items-center p-2"
@@ -114,7 +114,7 @@ export default function Chat() {
             <IoIosArrowRoundBack size={25} />
           </Link>
 
-          <div className="flex flex-col justify-center items-center">
+          <div className="md:flex hidden flex-col justify-center items-center">
             <div className="flex justify-center items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[#4cf932]" />
               <p className="font-semibold">Your Personal Bot</p>
@@ -153,14 +153,13 @@ export default function Chat() {
 
               return (
                 <div
-                  style={{
-                    scrollbarWidth: "none",
-                  }}
+                  key={msg.id}
+                  style={{ scrollbarWidth: "none" }}
                   className="flex gap-4 overflow-x-auto whitespace-nowrap pb-2"
                 >
                   {orders.map((ord: Order) => (
-                    <AnimatedMessage>
-                      <div key={ord.id} className="inline-block">
+                    <AnimatedMessage key={ord.id}>
+                      <div className="inline-block">
                         <OrderCard data={ord} />
                       </div>
                     </AnimatedMessage>
@@ -174,14 +173,13 @@ export default function Chat() {
 
               return (
                 <div
-                  style={{
-                    scrollbarWidth: "none",
-                  }}
+                  key={msg.id}
+                  style={{ scrollbarWidth: "none" }}
                   className="flex gap-4 overflow-x-auto whitespace-nowrap pb-2"
                 >
                   {payments.map((pms: Payment) => (
-                    <AnimatedMessage>
-                      <div key={pms.id} className="inline-block">
+                    <AnimatedMessage key={pms.id}>
+                      <div className="inline-block">
                         <PaymentCard data={pms} />
                       </div>
                     </AnimatedMessage>
@@ -195,14 +193,13 @@ export default function Chat() {
 
               return (
                 <div
-                  style={{
-                    scrollbarWidth: "none",
-                  }}
+                  key={msg.id}
+                  style={{ scrollbarWidth: "none" }}
                   className="flex gap-4 overflow-x-auto whitespace-nowrap pb-2"
                 >
                   {deals.map((dls: Deal) => (
-                    <AnimatedMessage>
-                      <div key={dls.id} className="inline-block">
+                    <AnimatedMessage key={dls.id}>
+                      <div className="inline-block">
                         <Card data={dls} />
                       </div>
                     </AnimatedMessage>
@@ -212,8 +209,8 @@ export default function Chat() {
             }
 
             return (
-              <AnimatedMessage>
-                <Message key={msg.id} role={msg.sender} message={msg.text} />
+              <AnimatedMessage key={msg.id}>
+                <Message role={msg.sender} message={msg.text} />
               </AnimatedMessage>
             );
           })}
@@ -234,14 +231,14 @@ export default function Chat() {
         </div>
 
         {/* text area */}
-        <div className="w-full bg-neutral-50 absolute bottom-0 py-6 px-8 flex flex-col justify-center items-center gap-4">
+        <div className="w-full bg-neutral-50 absolute bottom-0 md:py-6 py-4 md:px-8 px-4 flex flex-col justify-center items-center gap-4">
           <MenuComponent
             sendMessage={sendMessage}
             allMessages={messages}
             setMessages={setMessages}
             loading={loading}
           />
-          <div className="w-full px-16">
+          <div className="w-full md:px-16">
             <TextArea
               value={text}
               onChange={setText}

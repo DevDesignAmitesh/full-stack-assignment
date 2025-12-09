@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
-import { IoIosArrowRoundBack } from "react-icons/io";
 import {
   IoMailOutline,
   IoLockClosedOutline,
@@ -12,10 +11,10 @@ import {
 import { InputBox } from "../Input";
 import { ArrowCircle } from "../ArrowCircle";
 import { UserSignup } from "@repo/types/types";
-import { useSearchParams } from "next/navigation";
 import { useSignup } from "@/hooks/useSignup";
 import { useSignin } from "@/hooks/useSignin";
 import { BackButton } from "../BackButton";
+import { useRouter } from "next/navigation";
 
 const containerVariants = {
   hidden: {},
@@ -45,15 +44,15 @@ const itemVariants: any = {
 
 type mode = "signin" | "signup";
 
-export const MainPage = ({ role }: { role: mode }) => {
-  const [mode, setMode] = useState<mode>(role);
-
+export const MainPage = ({ mode }: { mode: mode }) => {
   const [form, setForm] = useState<UserSignup>({
     name: "",
     number: "",
     email: "",
     password: "",
   });
+
+  const router = useRouter();
 
   const { loading: signupLoading, handleSignup } = useSignup();
   const { loading: signinLoading, handleSignin } = useSignin();
@@ -167,7 +166,7 @@ export const MainPage = ({ role }: { role: mode }) => {
               <>
                 Don't have an account?{" "}
                 <span
-                  onClick={() => setMode("signup")}
+                  onClick={() => router.push("/signup")}
                   className="font-medium text-[#649a0d] cursor-pointer hover:underline"
                 >
                   Register
@@ -177,7 +176,7 @@ export const MainPage = ({ role }: { role: mode }) => {
               <>
                 Already have an account?{" "}
                 <span
-                  onClick={() => setMode("signin")}
+                  onClick={() => router.push("/signin")}
                   className="font-medium text-[#649a0d] cursor-pointer hover:underline"
                 >
                   Sign in
