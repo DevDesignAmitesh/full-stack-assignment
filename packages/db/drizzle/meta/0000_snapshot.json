@@ -1,5 +1,5 @@
 {
-  "id": "d268c6f5-6aaf-4b7c-8059-6af74300119c",
+  "id": "6eafe439-b771-4564-a182-ceea72ed8067",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -91,18 +91,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "quantity": {
+          "name": "quantity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "order_status": {
           "name": "order_status",
           "type": "order_status",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         },
         "createdAt": {
           "name": "createdAt",
@@ -120,21 +120,7 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "orders_userId_users_id_fk": {
-          "name": "orders_userId_users_id_fk",
-          "tableFrom": "orders",
-          "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -162,6 +148,18 @@
           "name": "payment_status",
           "type": "payment_status",
           "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "imgUrl": {
+          "name": "imgUrl",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -215,13 +213,13 @@
           "name": "email",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "address": {
-          "name": "address",
+        "password": {
+          "name": "password",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "createdAt": {
           "name": "createdAt",
@@ -247,6 +245,13 @@
           "nullsNotDistinct": false,
           "columns": [
             "number"
+          ]
+        },
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
           ]
         }
       },

@@ -4,7 +4,6 @@ import { ChatOpenAI } from "@langchain/openai";
 import type { Message, paramsType } from "@repo/types/types";
 import { AI_PROMPT } from "../prompt";
 import { fetchDynamicDataTool } from "../tool/fetchDynamicDataTool";
-import { identifyAndCreateUserTool } from "../tool/identifyAndCreateUserTool";
 import {
   ToolMessage,
   SystemMessage,
@@ -12,6 +11,7 @@ import {
   AIMessage,
 } from "@langchain/core/messages";
 import type { BaseMessage } from "@langchain/core/messages";
+import { verify, sign } from "jsonwebtoken";
 
 if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET not found");
@@ -25,7 +25,7 @@ if (!process.env.NODE_ENV) {
   throw new Error("NODE_ENV not found");
 }
 
-console.log(process.env.NODE_ENV)
+console.log(process.env.NODE_ENV);
 
 export const PORT = 4000;
 export const HTTP_URL = `http://localhost:${PORT}/api/v1`;
@@ -97,7 +97,6 @@ export function parseBotResponse(rawString: string): {
 }
 
 const toolMap = {
-  identifyAndCreateUserTool,
   fetchDynamicDataTool,
 };
 
@@ -108,10 +107,7 @@ export const createCompletion = async (messages: Message[]) => {
     apiKey: process.env.OPEN_API_KEY,
   });
 
-  const modelWithTools = model.bindTools([
-    identifyAndCreateUserTool,
-    fetchDynamicDataTool,
-  ]);
+  const modelWithTools = model.bindTools([fetchDynamicDataTool]);
 
   const langchainMessages: BaseMessage[] = [
     new SystemMessage({ content: AI_PROMPT }),
@@ -153,4 +149,15 @@ export const createCompletion = async (messages: Message[]) => {
   }
 
   return null;
+};
+
+export const generateTokem = ({ userId }: { userId: string }) => {
+  const token = sign({ userId }, process.env.JWT_SECRET!);
+  return token;
+};
+
+export const verifyTokem = ({ token }: { token: string }) => {
+  const decoded = verify(token, process.env.JWT_SECRET!) as { userId: string };
+  console.log("verifyed token ", decoded);
+  return decoded.userId;
 };

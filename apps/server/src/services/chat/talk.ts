@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import { chatSchema, paramsType } from "@repo/types/types";
+import { chatSchema } from "@repo/types/types";
 import { createCompletion } from "../../utils";
-import { parseBotResponse, responsePlate } from "../../utils";
+import { responsePlate } from "../../utils";
 
 export const talkRequest = async (
   req: Request,

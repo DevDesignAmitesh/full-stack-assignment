@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { chatRouter } from "./routes/chat";
 import { FRONTEND_URL, PORT } from "./utils";
+import { authRouter } from "./routes/auth";
 
 export const app = express();
 
@@ -13,9 +14,6 @@ console.log(FRONTEND_URL);
 app.use(
   cors({
     origin: [FRONTEND_URL],
-
-    // for docker
-    // origin: ["http://client:3000"],
     credentials: true,
     optionsSuccessStatus: 200,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -26,6 +24,7 @@ app.use(
 app.use(express.json());
 
 app.use("/api/v1/chat", chatRouter);
+app.use("/api/v1/auth", authRouter);
 
 app.get("/health", (_, res: Response) => {
   res.send("good");

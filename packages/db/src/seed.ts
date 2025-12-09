@@ -1,121 +1,159 @@
 import { db, schema } from ".";
 
-const IMAGE_URL =
-  "https://img.freepik.com/free-photo/courage-man-jump-through-gap-hill-business-concept-idea_1323-262.jpg";
+const IMAGE_URLS = [
+  "https://images.pexels.com/photos/1087727/pexels-photo-1087727.jpeg",
+  "https://images.pexels.com/photos/631212/pexels-photo-631212.jpeg",
+  "https://images.pexels.com/photos/8903620/pexels-photo-8903620.jpeg",
+  "https://images.pexels.com/photos/1447261/pexels-photo-1447261.jpeg",
+  "https://images.pexels.com/photos/8306367/pexels-photo-8306367.jpeg",
+  "https://images.pexels.com/photos/8311884/pexels-photo-8311884.jpeg",
+];
+
+const getRandomImage = () =>
+  IMAGE_URLS[Math.floor(Math.random() * IMAGE_URLS.length)];
 
 async function main() {
   try {
-    await Promise.all([
-      db.insert(schema.deals).values([
-        {
-          title: "Winter Wear Sale",
-          description: "Flat 40% off on jackets and hoodies",
-          imgUrl: IMAGE_URL,
-          isAcive: true,
-          price: "1999",
-        },
-        {
-          title: "Smartphone Exchange Offer",
-          description: "Exchange old phone and get cashback",
-          imgUrl: IMAGE_URL,
-          isAcive: true,
-          price: "14999",
-        },
-        {
-          title: "Travel Backpack Deal",
-          description: "Durable backpack for daily travel",
-          imgUrl: IMAGE_URL,
-          isAcive: true,
-          price: "1299",
-        },
-        {
-          title: "Running Shoes Discount",
-          description: "Lightweight shoes for daily running",
-          imgUrl: IMAGE_URL,
-          isAcive: true,
-          price: "2999",
-        },
-        {
-          title: "Headphones Mega Sale",
-          description: "Noise cancelling wireless headphones",
-          imgUrl: IMAGE_URL,
-          isAcive: true,
-          price: "3499",
-        },
-        {
-          title: "Office Chair Offer",
-          description: "Ergonomic chair with lumbar support",
-          imgUrl: IMAGE_URL,
-          isAcive: true,
-          price: "6999",
-        },
-      ]),
+    const [orders, deals, payments] = await Promise.all([
+      db.query.orders.findMany(),
+      db.query.deals.findMany(),
+      db.query.payments.findMany(),
+    ]);
 
-      db.insert(schema.payments).values([
-        {
-          amount: "₹4000",
-          status: "PENDING",
-        },
-        {
-          amount: "₹500",
-          status: "FAILED",
-        },
-        {
-          amount: "₹1500",
-          status: "CONFIRMED",
-        },
-        {
-          amount: "₹899",
-          status: "CONFIRMED",
-        },
-        {
-          amount: "₹12999",
-          status: "PENDING",
-        },
-        {
-          amount: "₹2499",
-          status: "FAILED",
-        },
-      ]),
+    if (orders.length === 0 && deals.length === 0 && payments.length === 0) {
+      console.log("Database already seeded!!");
+      process.exit(0);
+    }
+    /* -------------------- DEALS -------------------- */
+    await db.insert(schema.deals).values([
+      {
+        title: "Winter Wear Sale",
+        description: "Flat 40% off on jackets and hoodies",
+        price: "1999",
+        imgUrl: getRandomImage() ?? "",
+        isAcive: true,
+      },
+      {
+        title: "Smartphone Exchange Offer",
+        description: "Exchange old phone and get cashback",
+        price: "14999",
+        imgUrl: getRandomImage() ?? "",
+        isAcive: true,
+      },
+      {
+        title: "Travel Backpack Deal",
+        description: "Durable backpack for daily travel",
+        price: "1299",
+        imgUrl: getRandomImage() ?? "",
+        isAcive: true,
+      },
+      {
+        title: "Running Shoes Discount",
+        description: "Lightweight shoes for daily running",
+        price: "2999",
+        imgUrl: getRandomImage() ?? "",
+        isAcive: true,
+      },
+      {
+        title: "Headphones Mega Sale",
+        description: "Noise cancelling wireless headphones",
+        price: "3499",
+        imgUrl: getRandomImage() ?? "",
+        isAcive: true,
+      },
+      {
+        title: "Office Chair Offer",
+        description: "Ergonomic chair with lumbar support",
+        price: "6999",
+        imgUrl: getRandomImage() ?? "",
+        isAcive: true,
+      },
+    ]);
 
-      db.insert(schema.orders).values([
-        {
-          imgUrl: IMAGE_URL,
-          productName: "Wireless Headphones",
-          status: "PENDING",
-        },
-        {
-          imgUrl: IMAGE_URL,
-          productName: "Running Shoes",
-          status: "CONFIRMED",
-        },
-        {
-          imgUrl: IMAGE_URL,
-          productName: "Laptop Backpack",
-          status: "CONFIRMED",
-        },
-        {
-          imgUrl: IMAGE_URL,
-          productName: "Office Chair",
-          status: "PENDING",
-        },
-        {
-          imgUrl: IMAGE_URL,
-          productName: "Smart Watch",
-          status: "REJECTED",
-        },
-        {
-          imgUrl: IMAGE_URL,
-          productName: "Bluetooth Speaker",
-          status: "CONFIRMED",
-        },
-      ]),
+    /* -------------------- PAYMENTS -------------------- */
+    await db.insert(schema.payments).values([
+      {
+        amount: "4000",
+        status: "PENDING",
+        description: "UPI Payment Pending",
+        imgUrl: getRandomImage() ?? "",
+      },
+      {
+        amount: "500",
+        status: "FAILED",
+        description: "Card payment failed",
+        imgUrl: getRandomImage() ?? "",
+      },
+      {
+        amount: "1500",
+        status: "CONFIRMED",
+        description: "Payment successful via UPI",
+        imgUrl: getRandomImage() ?? "",
+      },
+      {
+        amount: "899",
+        status: "CONFIRMED",
+        description: "Wallet payment success",
+        imgUrl: getRandomImage() ?? "",
+      },
+      {
+        amount: "12999",
+        status: "PENDING",
+        description: "Net banking pending",
+        imgUrl: getRandomImage() ?? "",
+      },
+      {
+        amount: "2499",
+        status: "FAILED",
+        description: "Transaction timed out",
+        imgUrl: getRandomImage() ?? "",
+      },
+    ]);
+
+    /* -------------------- ORDERS -------------------- */
+    await db.insert(schema.orders).values([
+      {
+        productName: "Wireless Headphones",
+        quantity: "1",
+        status: "PENDING",
+        imgUrl: getRandomImage() ?? "",
+      },
+      {
+        productName: "Running Shoes",
+        quantity: "2",
+        status: "CONFIRMED",
+        imgUrl: getRandomImage() ?? "",
+      },
+      {
+        productName: "Laptop Backpack",
+        quantity: "1",
+        status: "CONFIRMED",
+        imgUrl: getRandomImage() ?? "",
+      },
+      {
+        productName: "Office Chair",
+        quantity: "1",
+        status: "PENDING",
+        imgUrl: getRandomImage() ?? "",
+      },
+      {
+        productName: "Smart Watch",
+        quantity: "1",
+        status: "REJECTED",
+        imgUrl: getRandomImage() ?? "",
+      },
+      {
+        productName: "Bluetooth Speaker",
+        quantity: "3",
+        status: "DELIVERED",
+        imgUrl: getRandomImage() ?? "",
+      },
     ]);
 
     console.log("Database seeded successfully");
     process.exit(0);
-  } catch (e) {
-    console.log("Error while seeding:", e);
+  } catch (error) {
+    console.error("Error while seeding:", error);
     process.exit(1);
   }
 }

@@ -71,3 +71,15 @@ export interface Payment {
 
   createdAt: Date;
 }
+
+export const signupSchema = z.object({
+  name: z.string().min(4),
+  email: z.email().min(4),
+  password: z.string().min(4),
+  number: z.string().min(4),
+})
+
+export const signinSchema = z.object({
+  email: z.email().min(4),
+  password: z.string().min(4),
+})

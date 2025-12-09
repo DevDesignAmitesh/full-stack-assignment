@@ -21,7 +21,7 @@ export function PaymentCard() {
 
         {/* Middle Row: Product */}
         <div className="flex items-center gap-3 bg-neutral-50 rounded-xl p-3">
-          <div className="w-12 h-12 rounded-lg overflow-hidden bg-neutral-200 flex-shrink-0">
+          <div className="w-12 h-12 rounded-lg overflow-hidden bg-neutral-200 shrink-0">
             {/* Product Image */}
             {/* <img src="/product.png" className="w-full h-full object-cover" /> */}
           </div>

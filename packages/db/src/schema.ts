@@ -24,8 +24,8 @@ export const users = pgTable("users", {
   id: uuid("id").notNull().defaultRandom().primaryKey(),
   name: text("name").notNull(),
   number: text("number").notNull().unique(),
-  email: text("email"),
-  address: text("address"),
+  email: text("email").notNull().unique(),
+  password: text("password").notNull(),
 
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),
@@ -47,9 +47,8 @@ export const orders = pgTable("orders", {
   id: uuid("id").notNull().defaultRandom().primaryKey(),
   productName: text("productName").notNull(),
   imgUrl: text("imgUrl").notNull(),
+  quantity: text("quantity").notNull(),
   status: orderStatusEnums("order_status").notNull(),
-
-  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
 
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),
@@ -59,6 +58,8 @@ export const payments = pgTable("payments", {
   id: uuid("id").notNull().defaultRandom().primaryKey(),
   amount: text("amount").notNull(),
   status: paymentStatusEnums("payment_status").notNull(),
+  description: text("description").notNull(),
+  imgUrl: text("imgUrl").notNull(),
 
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow(),
