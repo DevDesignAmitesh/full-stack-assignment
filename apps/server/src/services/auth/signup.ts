@@ -43,17 +43,11 @@ export const signupRequest = async (req: Request, res: Response) => {
         name,
         password: hashsedPassword,
       })
-      .returning({ id: schema.users.id })
-      .then(([data]) => {
-        const token = generateTokem({ userId: data?.id! });
-
+      .then(() => {
         return responsePlate({
           res,
           message: "signup successfull",
           status: 201,
-          data: {
-            token,
-          },
         });
       })
       .catch((e) => {

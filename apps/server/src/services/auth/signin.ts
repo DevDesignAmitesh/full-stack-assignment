@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { generateTokem, responsePlate } from "../../utils";
 import { signinSchema, zodErrorMessage } from "@repo/types/types";
 import { db, eq, schema } from "@repo/db/db";
-import { compare } from "bcryptjs"
+import { compare } from "bcryptjs";
 
 export const signinRequest = async (req: Request, res: Response) => {
   try {
@@ -31,13 +31,13 @@ export const signinRequest = async (req: Request, res: Response) => {
     }
 
     const isPasswordValid = await compare(password, exisitngUser.password);
-    
-    if(!isPasswordValid) {
+
+    if (!isPasswordValid) {
       return responsePlate({
         res,
         message: "password is wrong",
-        status: 400
-      })
+        status: 400,
+      });
     }
 
     const token = generateTokem({ userId: exisitngUser.id });
@@ -47,6 +47,7 @@ export const signinRequest = async (req: Request, res: Response) => {
       message: "signin successfull",
       data: {
         token,
+        name: exisitngUser.name,
       },
       status: 200,
     });

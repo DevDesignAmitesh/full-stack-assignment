@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "motion/react";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import {
   IoMailOutline,
@@ -10,18 +11,53 @@ import {
 } from "react-icons/io5";
 import { InputBox } from "../Input";
 import { ArrowCircle } from "../ArrowCircle";
+import { UserSignup } from "@repo/types/types";
+import { useSearchParams } from "next/navigation";
+import { useSignup } from "@/hooks/useSignup";
+import { useSignin } from "@/hooks/useSignin";
 
-export const MainPage = () => {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+const containerVariants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.2,
+    },
+  },
+};
 
-  const [form, setForm] = useState({
+const itemVariants: any = {
+  hidden: {
+    opacity: 0,
+    y: 20,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 120,
+      damping: 14,
+    },
+  },
+};
+
+type mode = "signin" | "signup";
+
+export const MainPage = ({ role }: { role: mode }) => {
+  const [mode, setMode] = useState<mode>(role);
+
+  const [form, setForm] = useState<UserSignup>({
     name: "",
-    phone: "",
+    number: "",
     email: "",
     password: "",
   });
 
-  const handleChange = (key: string, value: string) => {
+  const { loading: signupLoading, handleSignup } = useSignup();
+  const { loading: signinLoading, handleSignin } = useSignin();
+
+  const handleChange = (key: keyof UserSignup, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -29,20 +65,22 @@ export const MainPage = () => {
     if (mode === "signin") {
       const { email, password } = form;
       console.log("SIGN IN", { email, password });
+      handleSignin(form);
     } else {
       console.log("SIGN UP", form);
+      handleSignup(form);
     }
   };
 
   return (
     <div className="w-full h-screen bg-white">
-      <div className="relative w-full h-full max-w-xl mx-auto border-x-2 border-neutral-300 flex flex-col justify-start items-start pt-8 px-6">
-        {/* back button */}
-        <div className="bg-neutral-100 text-neutral-800 rounded-full flex justify-center items-center p-2">
+      <div className="relative w-full h-full max-w-xl mx-auto border-x-2 border-neutral-300 flex flex-col pt-8 px-6">
+        {/* Back button */}
+        <div className="bg-neutral-100 text-neutral-800 rounded-full flex justify-center items-center p-2 absolute left-5 top-5">
           <IoIosArrowRoundBack size={25} />
         </div>
 
-        <h1 className="text-4xl font-semibold text-neutral-800 mt-6">
+        <h1 className="text-4xl font-semibold text-neutral-800 mt-12">
           {mode === "signin" ? "Welcome Back" : "Create Account"}
         </h1>
 
@@ -52,58 +90,80 @@ export const MainPage = () => {
             : "Sign up to get started."}
         </p>
 
-        <div className="mt-8 flex flex-col gap-4 w-full">
+        {/* Animated Inputs */}
+        <motion.div
+          key={mode} // important so animation replays on mode switch
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="mt-8 flex flex-col gap-4 w-full"
+        >
           {mode === "signup" && (
             <>
-              <InputBox
-                type="text"
-                placeholder="Enter your name"
-                icon={
-                  <IoPersonOutline className="text-neutral-500" size={25} />
-                }
-                value={form.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-              />
+              <motion.div variants={itemVariants}>
+                <InputBox
+                  type="text"
+                  placeholder="Enter your name"
+                  icon={<IoPersonOutline size={25} />}
+                  value={form.name}
+                  onChange={(e) => handleChange("name", e.target.value)}
+                />
+              </motion.div>
 
-              <InputBox
-                type="text"
-                placeholder="Enter your phone number"
-                icon={<IoCallOutline className="text-neutral-500" size={25} />}
-                value={form.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-              />
+              <motion.div variants={itemVariants}>
+                <InputBox
+                  type="text"
+                  placeholder="Enter your phone number"
+                  icon={<IoCallOutline size={25} />}
+                  value={form.number}
+                  onChange={(e) => handleChange("number", e.target.value)}
+                />
+              </motion.div>
             </>
           )}
 
-          <InputBox
-            type="email"
-            placeholder="Enter your email"
-            icon={<IoMailOutline className="text-neutral-500" size={25} />}
-            value={form.email}
-            onChange={(e) => handleChange("email", e.target.value)}
-          />
+          <motion.div variants={itemVariants}>
+            <InputBox
+              type="email"
+              placeholder="Enter your email"
+              icon={<IoMailOutline size={25} />}
+              value={form.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+            />
+          </motion.div>
 
-          <InputBox
-            placeholder="Enter your password"
-            type="password"
-            icon={
-              <IoLockClosedOutline className="text-neutral-500" size={25} />
-            }
-            value={form.password}
-            onChange={(e) => handleChange("password", e.target.value)}
-          />
-        </div>
+          <motion.div variants={itemVariants}>
+            <InputBox
+              type="password"
+              placeholder="Enter your password"
+              icon={<IoLockClosedOutline size={25} />}
+              value={form.password}
+              onChange={(e) => handleChange("password", e.target.value)}
+            />
+          </motion.div>
+        </motion.div>
 
-        <div className="flex flex-col justify-center items-center gap-4 w-full mt-10">
+        {/* Animated Button */}
+        <motion.div
+          variants={itemVariants}
+          initial="hidden"
+          animate="show"
+          className="flex flex-col gap-4 w-full mt-10"
+        >
           <button
+            disabled={signupLoading || signinLoading}
             onClick={handleSubmit}
-            className="bg-black text-white font-semibold py-3 rounded-full 
-          cursor-pointer w-full text-center"
+            className="bg-black text-white font-semibold py-3 rounded-full w-full flex justify-center items-center gap-2"
           >
-            {mode === "signin" ? "Sign in" : "Sign up"} <ArrowCircle />
+            {signupLoading || signinLoading
+              ? "Processing"
+              : mode === "signin"
+                ? "Sign in"
+                : "Sign up"}{" "}
+            <ArrowCircle />
           </button>
 
-          <p className="text-neutral-600 text-[14px] w-full text-center">
+          <p className="text-neutral-600 text-[14px] text-center">
             {mode === "signin" ? (
               <>
                 Don't have an account?{" "}
@@ -126,7 +186,7 @@ export const MainPage = () => {
               </>
             )}
           </p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
